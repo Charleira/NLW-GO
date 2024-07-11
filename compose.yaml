@@ -1,0 +1,44 @@
+services:
+  db:
+    image: "postgres:latest"
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${JOURNEY_DATABASE_USER}
+      POSTGRES_NAME: ${JOURNEY_DATABASE_NAME}
+      POSTGRES_PASSWORD: ${JOURNEY_DATABASE_PASSWORD}
+    volumes:
+      - db:/var/lib/postgresql/data
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-carlos1801}
+    ports:
+      - 8081:80
+    volumes:
+      - pgadmin:/var/lib/gadmin
+
+  app:
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      JOURNEY_DATABASE_NAME: ${JOURNEY_DATABASE_NAME}
+      JOURNEY_DATABASE_USER: ${JOURNEY_DATABASE_USER}
+      JOURNEY_DATABASE_PASSWORD: ${JOURNEY_DATABASE_PASSWORD}
+      JOURNEY_DATABASE_PORT: ${JOURNEY_DATABASE_PORT:-5432}
+      JOURNEY_DATABASE_HOST: ${JOURNEY_DATABASE_HOST_DOCKER:-db}
+    depends_on:
+      - db
+    
+volumes:
+  db:
+    driver: local
+  pgadmin:
+    driver: local
